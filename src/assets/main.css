@@ -1,2 +1,12 @@
 @import "tailwindcss";
 @import "tailwindcss-primeui";
+@import 'primeicons/primeicons.css';
+
+@layer base {
+    :root {
+        --color-primary: hsl(0, 0%, 0%);
+        --color-secondary: hsl(0, 0%, 50%);
+        --color-text-base: hsl(0, 0%, 100%);
+        --color-bg-primary: hsl(0, 0%, 100%);
+    }
+}
