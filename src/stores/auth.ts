@@ -22,7 +22,7 @@ export const useAuthStore = defineStore('auth', {
   }),
 
   actions: {
-    async login(username: string, password: string) {
+    async login(username: string, password: string): boolean {
       try {
         const response = await axiosInstance.post<LoginResponse>('/api/auth/login', {
           username,
@@ -30,7 +30,7 @@ export const useAuthStore = defineStore('auth', {
         })
 
         if (response.status != 200) {
-          throw new Error('Login failed')
+          return false;
         }
 
         const data: LoginResponse = response.data;
@@ -43,9 +43,9 @@ export const useAuthStore = defineStore('auth', {
         localStorage.setItem('accessToken', this.accessToken)
         localStorage.setItem('refreshToken', this.refreshToken)
         localStorage.setItem('user', JSON.stringify(this.user))
+        return true
       } catch (error) {
-        console.error('Login error:', error)
-        throw error
+        return false;
       }
     },
 

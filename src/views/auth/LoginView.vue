@@ -59,8 +59,12 @@ const error = ref('')
 
 const handleSubmit = async () => {
   try {
-    await authStore.login(username.value, password.value)
-    router.push('/') // Redirect to home page after successful login
+    const result = await authStore.login(username.value, password.value)
+    if (result) {
+      router.push('/')
+    } else {
+      error.value = 'Login failed. Please check your credentials.'
+    }
   } catch (err) {
     console.log(err)
     error.value = 'Login failed. Please check your credentials.'

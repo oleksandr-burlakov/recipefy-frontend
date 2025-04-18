@@ -33,6 +33,11 @@ const router = createRouter({
       meta: { requiresAuth: true },
       children: [
         {
+          path: '',
+          name: 'main',
+          component: () => import('../views/product/ProductListView.vue')
+        },
+        {
           path: 'category',
           name: 'product-category',
           component: () => import('../views/product-categories/ProductCategoryListView.vue')
@@ -49,7 +54,7 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore()
 
-  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+  if (to.meta.requiresAuth && !authStore.isAuthenticated && from.path !== '/login') {
     next('/login')
   } else {
     next()

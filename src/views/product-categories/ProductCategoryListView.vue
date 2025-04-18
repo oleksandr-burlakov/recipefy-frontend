@@ -1,34 +1,22 @@
 <script setup lang="ts">
-import { productCategoryService } from '@/services/product-category.service.ts'
 import { ref, onMounted } from 'vue'
-import type { ProductCategory } from '@/models/product-category/ProductCategory.model.ts'
+import type { ProductCategoryModel } from '@/models/product-category/ProductCategory.model.ts'
 import { Button, DataTable, Column } from 'primevue'
 import AddProductCategoryDialog from '@/views/product-categories/AddProductCategoryDialog.vue'
+import { useProductCategoriesStore } from '@/stores/product-categories.ts'
+import { storeToRefs } from 'pinia'
 
-const productCategories = ref<ProductCategory[]>([])
+const productCategoryStore = useProductCategoriesStore();
+const { productCategories } = storeToRefs(productCategoryStore);
 const isAddDialogVisible = ref(false);
 
 onMounted(async () => {
-  try {
-    productCategories.value = await productCategoryService.getAll()
-  } catch (error) {
-    console.error(error)
-  }
+    await productCategoryStore.init();
 })
 
-const onCategoryAdd = async () => {
+const deleteCategory = async (productCategory: ProductCategoryModel) => {
   try {
-    productCategories.value = await productCategoryService.getAll()
-    isAddDialogVisible.value = false;
-  } catch (error) {
-    console.log(error)
-  }
-}
-
-const deleteCategory = async (productCategory: ProductCategory) => {
-  try {
-    await productCategoryService.delete(productCategory.id)
-    productCategories.value = await productCategoryService.getAll()
+    await productCategoryStore.delete(productCategory.id);
   } catch (error) {
     console.log(error)
   }
@@ -58,7 +46,7 @@ const deleteCategory = async (productCategory: ProductCategory) => {
       </DataTable>
     </div>
   </div>
-  <AddProductCategoryDialog :is-visible="isAddDialogVisible" @close-dialog="isAddDialogVisible = false" @newCategory="onCategoryAdd" />
+  <AddProductCategoryDialog :is-visible="isAddDialogVisible" @close-dialog="isAddDialogVisible = false" />
 </template>
 
 <style scoped></style>

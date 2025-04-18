@@ -1,4 +1,4 @@
-export interface ProductCategory {
+export interface ProductCategoryModel {
   id: string;
   name: string;
 }

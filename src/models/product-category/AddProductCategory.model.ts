@@ -1,3 +1,3 @@
-export interface AddProductCategory {
+export interface AddProductCategoryModel {
   name: string
 }

@@ -21,6 +21,10 @@ const items = ref([
     label: 'Product',
     items: [
       {
+        label: 'Main',
+        route: '/product'
+      },
+      {
         label: 'Category',
         route: '/product/category',
       },
