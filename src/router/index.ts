@@ -7,47 +7,54 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      name: 'home',
       component: HomeView,
       meta: { requiresAuth: true }
     },
     {
       path: '/about',
-      name: 'about',
       component: () => import('../views/AboutView.vue'),
       meta: { requiresAuth: true }
     },
     {
       path: '/login',
-      name: 'login',
       component: () => import('../views/auth/LoginView.vue')
     },
     {
       path: '/register',
-      name: 'register',
       component: () => import('../views/auth/RegisterView.vue')
     },
     {
       path: '/product',
-      name: 'product',
       meta: { requiresAuth: true },
       children: [
         {
           path: '',
-          name: 'main',
           component: () => import('../views/product/ProductListView.vue')
         },
         {
           path: 'category',
-          name: 'product-category',
-          component: () => import('../views/product-categories/ProductCategoryListView.vue')
+          component: () => import('@/views/product/product-categories/ProductCategoryListView.vue')
+        }
+      ]
+    },
+    {
+      path: '/recepies',
+      meta: { requiresAuth: true },
+      children: [
+        {
+          path: '',
+          component: () => import('../views/recepies/RecepiesListView.vue')
+        },
+        {
+          path: 'form/:id?',
+          component: () => import('../views/recepies/ReceiptFormView.vue')
+        },
+        {
+          path: 'category',
+          component: () => import('../views/recepies/categories/CategoriesListView.vue')
         }
       ]
     }
-    // {
-    //   path: '/protected',
-    //   meta: { requiresAuth: true },
-    // },
   ]
 })
 

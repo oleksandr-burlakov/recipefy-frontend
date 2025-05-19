@@ -30,6 +30,20 @@ const items = ref([
       },
     ],
   },
+  {
+    label: 'Recepies',
+    items: [
+      {
+        label: 'Main',
+        route: '/recepies'
+      },
+      {
+        label: 'Categories',
+        route: '/recepies/category',
+      }
+    ],
+  },
+
 ])
 </script>
 

@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue'
 import type { ProductCategoryModel } from '@/models/product-category/ProductCategory.model.ts'
 import { Button, DataTable, Column } from 'primevue'
-import AddProductCategoryDialog from '@/views/product-categories/AddProductCategoryDialog.vue'
+import AddProductCategoryDialog from '@/views/product/product-categories/AddProductCategoryDialog.vue'
 import { useProductCategoriesStore } from '@/stores/product-categories.ts'
 import { storeToRefs } from 'pinia'
 

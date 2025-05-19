@@ -9,6 +9,7 @@ import App from './App.vue'
 import router from './router'
 import { useAuthStore } from './stores/auth'
 import { definePreset } from '@primeuix/themes'
+import Tooltip from 'primevue/tooltip';
 
 const app = createApp(App)
 const pinia = createPinia()
@@ -62,6 +63,7 @@ app.use(PrimeVue, {
     },
   },
 })
+app.directive('tooltip', Tooltip)
 app.use(pinia)
 app.use(router)
 
