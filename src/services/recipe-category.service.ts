@@ -4,15 +4,15 @@ import type { RecipeCategoryModel } from '@/models/recipe-category/RecipeCategor
 
 export const recipeCategoryService = {
   getAll: async () => {
-    const response = await axiosInstance.get<RecipeCategoryModel[]>(`/api/receiptCategory`)
+    const response = await axiosInstance.get<RecipeCategoryModel[]>(`/api/recipeCategory`)
     return response.data
   },
-  add: async (productCategory: AddRecipeCategoryModel) => {
-    const response = await axiosInstance.post(`/api/receiptCategory`, productCategory)
+  add: async (recipeCategory: AddRecipeCategoryModel) => {
+    const response = await axiosInstance.post(`/api/recipeCategory`, recipeCategory)
     return response.status == 200;
   },
   delete: async(id: string) => {
-    const response = await axiosInstance.delete(`/api/receiptCategory/${id}`)
+    const response = await axiosInstance.delete(`/api/recipeCategory/${id}`)
     return response.status == 200
   }
 }

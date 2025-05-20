@@ -1,5 +1,5 @@
 export interface AddRecipeModel {
-  receiptCategoryId: string,
+  recipeCategoryId: string,
   title: string,
   description: string,
   instructions: string,
