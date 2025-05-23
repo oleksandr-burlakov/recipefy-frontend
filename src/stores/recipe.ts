@@ -25,7 +25,7 @@ export const useRecipeStore = defineStore('recipe', {
     async add(recipe: AddRecipeModel) {
       try {
         await recipeService.add(recipe)
-        await this.init()
+        this.recipes.splice(0, this.recipes.length, ...await recipeService.getAll())
       } catch (error) {
         console.error(error)
       }

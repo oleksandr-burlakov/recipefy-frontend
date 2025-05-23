@@ -13,8 +13,7 @@ export const useProductCategoriesStore = defineStore('product-categories', {
     async init() {
       try {
         if (!this.isInit) {
-          const data = await productCategoryService.getAll()
-          this.productCategories = data
+          this.productCategories = await productCategoryService.getAll()
         }
       } catch (error) {
         console.error(error)
@@ -25,7 +24,7 @@ export const useProductCategoriesStore = defineStore('product-categories', {
     async add(productCategory: AddProductCategoryModel) {
       try {
         await productCategoryService.add(productCategory)
-        await this.init()
+        this.productCategories.splice(0, this.productCategories.length, ...await productCategoryService.getAll())
       } catch (error) {
         console.error(error)
       }

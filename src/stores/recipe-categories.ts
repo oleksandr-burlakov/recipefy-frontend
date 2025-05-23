@@ -25,7 +25,7 @@ export const useRecipeCategoriesStore = defineStore('recipe-categories', {
     async add(recipeCategory: AddRecipeCategoryModel) {
       try {
         await recipeCategoryService.add(recipeCategory)
-        await this.init()
+        this.recipeCategories.splice(0, this.recipeCategories.length, ...await recipeCategoryService.getAll())
       } catch (error) {
         console.error(error)
       }
