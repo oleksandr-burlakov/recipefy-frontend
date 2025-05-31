@@ -49,13 +49,16 @@ axiosInstance.interceptors.response.use(
           localStorage.removeItem('accessToken')
           localStorage.removeItem('refreshToken')
           localStorage.removeItem('user')
-          window.location.href = '/login';
+          // Redirect to the login page with the current URL as the return URL
+          const currentPath = window.location.pathname + window.location.search;
+          window.location.href = `/login?returnUrl=${encodeURIComponent(currentPath)}`;
         }
       }
 
       console.log('Token expired. Please log in again.');
-      // For example, you can redirect to the login page:
-      window.location.href = '/login';
+      // Redirect to the login page with the current URL as the return URL
+      const currentPath = window.location.pathname + window.location.search;
+      window.location.href = `/login?returnUrl=${encodeURIComponent(currentPath)}`;
     }
     return Promise.reject(error);
   }

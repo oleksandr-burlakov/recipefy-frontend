@@ -43,11 +43,15 @@ const router = createRouter({
       children: [
         {
           path: '',
-          component: () => import('../views/recepies/RecepiesListView.vue')
+          component: () => import('../views/recepies/RecipesListView.vue')
         },
         {
           path: 'form/:id?',
-          component: () => import('../views/recepies/ReceiptFormView.vue')
+          component: () => import('../views/recepies/RecipeFormView.vue')
+        },
+        {
+          path: 'view/:id',
+          component: () => import('../views/recepies/RecipeView.vue')
         },
         {
           path: 'category',
@@ -62,7 +66,8 @@ router.beforeEach((to, from, next) => {
   const authStore = useAuthStore()
 
   if (to.meta.requiresAuth && !authStore.isAuthenticated && from.path !== '/login') {
-    next('/login')
+    const returnUrl = encodeURIComponent(to.fullPath)
+    next(`/login?returnUrl=${returnUrl}`)
   } else {
     next()
   }

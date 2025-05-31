@@ -1,3 +1,5 @@
+import type { IngredientDraftModel } from '@/models/ingredient/IngredientDraft.model.ts'
+
 export interface AddRecipeModel {
   recipeCategoryId: string,
   title: string,
@@ -6,5 +8,5 @@ export interface AddRecipeModel {
   preparationTimeMinutes: number,
   cookingTimeMinutes: number,
   tagIds: string[],
-  ingredientIds: string[]
+  ingredients: IngredientDraftModel[]
 }

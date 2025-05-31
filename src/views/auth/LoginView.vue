@@ -49,6 +49,7 @@ import InputText from 'primevue/inputtext'
 import Password from 'primevue/password'
 import Button from 'primevue/button'
 import Message from 'primevue/message'
+import { useRoute } from 'vue-router'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -57,11 +58,14 @@ const username = ref('')
 const password = ref('')
 const error = ref('')
 
+const route = useRoute()
+
 const handleSubmit = async () => {
   try {
+    const returnUrl = route.query.returnUrl as string || '/'
     const result = await authStore.login(username.value, password.value)
     if (result) {
-      router.push('/')
+      router.push(returnUrl)
     } else {
       error.value = 'Login failed. Please check your credentials.'
     }

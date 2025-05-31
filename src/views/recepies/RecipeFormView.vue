@@ -18,29 +18,82 @@ import { useProductsStore } from '@/stores/products.ts'
 import { useRecipeStore } from '@/stores/recipe.ts'
 import { useTagStore } from '@/stores/tag.ts'
 import AddIngredientDialog from '@/views/recepies/AddIngredientDialog.vue'
+import type { IngredientDraftModel } from '@/models/ingredient/IngredientDraft.model.ts'
+import { recipeService } from '@/services/recipe.service.ts'
+import { useRouter, useRoute } from 'vue-router'
+import type { RecipeModel } from '@/models/recipe/Recipe.model.ts'
 
 const recipeCategoryStore = useRecipeCategoriesStore()
 const productStore = useProductsStore()
 const recipeStore = useRecipeStore()
 const tagStore = useTagStore()
+const router = useRouter()
+const route = useRoute()
 
 const { recipeCategories } = storeToRefs(recipeCategoryStore)
 const { tags } = storeToRefs(tagStore)
 
-const isIngredientsDialogVisible = ref(false);
+const isIngredientsDialogVisible = ref(false)
+const isEditMode = ref(false)
+const recipeId = ref<string | null>(null)
+const loading = ref(true)
+const error = ref<string | null>(null)
+
+const draftIngredients = ref<IngredientDraftModel[]>([])
+
+const goBack = () => {
+  router.push('/recepies')
+}
 
 onMounted(async () => {
   await recipeCategoryStore.init()
   await productStore.init()
   await tagStore.init()
+
+  // Check if we're in edit mode
+  const id = route.params.id as string
+  if (id) {
+    isEditMode.value = true
+    recipeId.value = id
+    try {
+      const recipe = await recipeService.getById(id)
+      // Update initial values with recipe data
+      initialValues.title = recipe.title
+      initialValues.description = recipe.description
+      initialValues.instructions = recipe.instructions
+      initialValues.preparationTimeMinutes = recipe.preparationTimeMinutes
+      initialValues.cookingTimeMinutes = recipe.cookingTimeMinutes
+      initialValues.recipeCategoryId = recipe.recipeCategory?.id
+
+      // Set ingredients
+      draftIngredients.value = recipe.ingredients.map(ingredient => ({
+        productId: ingredient.productId,
+        productName: ingredient.productName,
+        quantity: ingredient.quantity,
+        units: ingredient.units
+      }))
+
+      // Set tags
+      if (recipe.tags && recipe.tags.length > 0) {
+        initialValues.tags = recipe.tags
+      }
+    } catch (err) {
+      error.value = 'Failed to load recipe'
+      console.error(err)
+    }
+  }
+
+  loading.value = false
 })
 
 const initialValues = reactive({
-  title: 'test',
-  description: 'test',
-  instructions: 'test',
+  title: '',
+  description: '',
+  instructions: '',
   preparationTimeMinutes: 0,
   cookingTimeMinutes: 0,
+  recipeCategoryId: '',
+  tags: []
 })
 
 const resolver = ({ values }: FormResolverOptions) => {
@@ -74,21 +127,32 @@ const resolver = ({ values }: FormResolverOptions) => {
   }
 }
 
-const onFormSubmit = ({ valid, values }: FormSubmitEvent) => {
+const onFormSubmit = async ({ valid, values }: FormSubmitEvent) => {
   if (valid) {
-    console.log(values)
-    console.log('Form success')
-    console.log(values.tags.map((t) => t.id))
-    // recipeStore.add({
-    //   title: values.title,
-    //   description: values.description,
-    //   instructions: values.instructions,
-    //   recipeCategoryId: values.recipeCategoryId,
-    //   ingredientIds: values.ingredientIds,
-    //   preparationTimeMinutes: values.preparationTimeMinutes,
-    //   cookingTimeMinutes: values.cookingTimeMinutes,
-    //   tagIds: []
-    // });
+    const recipeData = {
+      title: values.title,
+      description: values.description,
+      instructions: values.instructions,
+      recipeCategoryId: values.recipeCategoryId,
+      ingredients: [...draftIngredients.value],
+      preparationTimeMinutes: values.preparationTimeMinutes,
+      cookingTimeMinutes: values.cookingTimeMinutes,
+      tagIds: values.tags?.map((t: { id: string }) => t.id),
+    };
+
+    let response;
+    if (isEditMode.value && recipeId.value) {
+      response = await recipeStore.update({
+        ...recipeData,
+        id: recipeId.value
+      });
+    } else {
+      response = await recipeStore.add(recipeData);
+    }
+
+    if (response !== null) {
+      router.push({ path: `/recepies` });
+    }
   }
 }
 
@@ -108,22 +172,56 @@ const addNewTag = async () => {
 }
 
 const openIngredientsPopup = async () => {
-  isIngredientsDialogVisible.value = true;
+  isIngredientsDialogVisible.value = true
+}
+
+const addIngredient = async (draftIngredient: IngredientDraftModel) => {
+  draftIngredients.value.push(draftIngredient)
+}
+
+const removeIngredient = (ingredient: IngredientDraftModel) => {
+  const index = draftIngredients.value.findIndex(
+    item => item.productId === ingredient.productId &&
+            item.units === ingredient.units &&
+            item.quantity === ingredient.quantity
+  )
+  if (index !== -1) {
+    draftIngredients.value.splice(index, 1)
+  }
 }
 </script>
 
 <template>
   <div>
-    <h2>Recipe form</h2>
-    <Form
-      v-slot="$form"
-      :initialValues
-      :resolver
-      @submit="onFormSubmit"
-      class="flex flex-col gap-4 my-3"
-    >
+    <div v-if="loading" class="flex justify-center items-center p-8">
+      <i class="pi pi-spin pi-spinner text-4xl"></i>
+    </div>
+
+    <div v-else-if="error" class="p-4 bg-red-100 text-red-700 rounded">
+      {{ error }}
+    </div>
+
+    <div v-else>
+      <div class="mb-4">
+        <Button
+          icon="pi pi-arrow-left"
+          label="Back to Recipes"
+          severity="secondary"
+          text
+          @click="goBack"
+        />
+      </div>
+
+      <h2>{{ isEditMode ? 'Edit Recipe' : 'Create Recipe' }}</h2>
+      <Form
+        v-slot="$form"
+        :initialValues
+        :resolver
+        @submit="onFormSubmit"
+        class="flex flex-col gap-4 my-3"
+      >
       <div class="flex lg:flex-row flex-col gap-4">
-        <div class="lg:w-1/2 w-full flex flex-col justify-evenly gap-4">
+        <div class="left-part lg:w-1/2 w-full flex flex-col  gap-4">
           <div class="flex flex-row gap-4">
             <div class="flex flex-col w-full">
               <FloatLabel variant="in">
@@ -196,7 +294,7 @@ const openIngredientsPopup = async () => {
           </div>
           <div>
             <FloatLabel variant="in">
-              <Textarea id="description" name="description" required class="w-full" />
+              <Textarea id="description" name="description" required class="w-full" rows="5" />
               <label for="description">Description</label>
             </FloatLabel>
             <Message
@@ -248,9 +346,8 @@ const openIngredientsPopup = async () => {
         </div>
         <div class="lg:w-2/3 w-full">
           <div class="flex flex-col">
-            <label for="instructions">Instructions</label>
             <Editor
-              editorStyle="height: 320px"
+              editorStyle="height: 650px"
               placeholder="Instructions"
               id="instructions"
               name="instructions"
@@ -264,25 +361,6 @@ const openIngredientsPopup = async () => {
             >
               {{ $form.instructions.error?.message }}
             </Message>
-            <!--          <template v-slot:toolbar>-->
-            <!--            <span class="ql-formats">-->
-            <!--              <button v-tooltip.bottom="'Bold'" class="ql-bold"></button>-->
-            <!--              <button v-tooltip.bottom="'Italic'" class="ql-italic"></button>-->
-            <!--              <button v-tooltip.bottom="'Underline'" class="ql-underline"></button>-->
-            <!--              <button v-tooltip.bottom="'Strikethrough'" class="ql-strike"></button>-->
-            <!--              <button v-tooltip.bottom="'Image'" class="ql-image"></button>-->
-            <!--              <button v-tooltip.bottom="'Header'" class="ql-header"></button>-->
-            <!--              <select class="ql-header">-->
-            <!--                <option value="1"></option>-->
-            <!--                <option value="2"></option>-->
-            <!--                <option value="3"></option>-->
-            <!--                <option value="4"></option>-->
-            <!--                <option value="5"></option>-->
-            <!--                <option value="6"></option>-->
-            <!--                <option selected></option>-->
-            <!--              </select>-->
-            <!--            </span>-->
-            <!--          </template>-->
           </div>
         </div>
       </div>
@@ -290,8 +368,19 @@ const openIngredientsPopup = async () => {
         <Button type="submit" label="Save" class="p-button-success" />
       </div>
     </Form>
+    </div>
   </div>
-  <AddIngredientDialog :is-visible="isIngredientsDialogVisible" @closeDialog="isIngredientsDialogVisible = false" />
+  <AddIngredientDialog
+    :is-visible="isIngredientsDialogVisible"
+    @closeDialog="isIngredientsDialogVisible = false"
+    @addIngredient="addIngredient"
+    @removeIngredient="removeIngredient"
+    :ingredients="draftIngredients"
+  />
 </template>
 
-<style scoped></style>
+<style scoped>
+.left-part {
+  max-height: 500px;
+}
+</style>
